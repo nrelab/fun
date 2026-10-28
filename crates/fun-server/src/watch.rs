@@ -44,6 +44,17 @@ pub fn watch_project(
                 project.root.display()
             ))
         })?;
+    let env_path = project.root.join(".env");
+    if env_path.is_file() {
+        watcher
+            .watch(&env_path, RecursiveMode::NonRecursive)
+            .map_err(|error| {
+                FunError::Worker(format!(
+                    "could not watch project environment file {}: {error}",
+                    env_path.display()
+                ))
+            })?;
+    }
 
     info!(path = %functions_root.display(), "watching function source files");
     Ok(async move {
@@ -140,6 +151,16 @@ fn collect_changes(event: notify::Result<Event>, project: &Project) -> HashSet<C
 }
 
 fn is_env_path(root: &Path, path: &Path) -> bool {
-    path.file_name().is_some_and(|name| name == ".env")
-        && path.parent().is_some_and(|parent| parent == root)
+    let candidate = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        root.join(path)
+    };
+    if candidate.file_name().is_none_or(|name| name != ".env") {
+        return false;
+    }
+    let Some(parent) = candidate.parent() else {
+        return false;
+    };
+    parent == root || parent.canonicalize().is_ok_and(|parent| parent == root)
 }

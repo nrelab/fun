@@ -162,7 +162,12 @@ fn init_list_invoke_and_http_dev_work_end_to_end() {
     assert!(after_error.contains("Welcome, Again!"), "{after_error}");
 
     fs::write(project.0.join(".env"), "GREETING=Howdy\n").unwrap();
-    let env_reload = wait_for_response(port, "Howdy, Reloaded!", "Reloaded");
+    let env_reload = wait_for_response(port, "Howdy, Reloaded!", "Reloaded").unwrap_or_else(|| {
+        panic!(
+            "environment reload timed out; watcher log:\n{}",
+            fs::read_to_string(&server_log_path).unwrap_or_default()
+        )
+    });
     assert!(env_reload.starts_with("HTTP/1.1 200"), "{env_reload}");
 
     let source_path = project.0.join("functions/hello/src/main.rs");
@@ -173,7 +178,8 @@ fn init_list_invoke_and_http_dev_work_end_to_end() {
         r#"format!("Bonjour, {name}!")"#,
     );
     fs::write(&source_path, &updated_source).unwrap();
-    let source_reload = wait_for_response(port, "Bonjour, Watched!", "Watched");
+    let source_reload = wait_for_response(port, "Bonjour, Watched!", "Watched")
+        .expect("source watcher did not reload function");
     assert!(source_reload.starts_with("HTTP/1.1 200"), "{source_reload}");
 
     fs::write(&source_path, "this is not valid Rust\n").unwrap();
@@ -188,7 +194,8 @@ fn init_list_invoke_and_http_dev_work_end_to_end() {
     );
 
     fs::write(&source_path, updated_source).unwrap();
-    let recovered = wait_for_response(port, "Bonjour, Recovered!", "Recovered");
+    let recovered = wait_for_response(port, "Bonjour, Recovered!", "Recovered")
+        .expect("function did not recover after the source was fixed");
     assert!(recovered.starts_with("HTTP/1.1 200"), "{recovered}");
 
     let status = server.shutdown();
@@ -351,18 +358,18 @@ fn try_request(port: u16, body: &[u8]) -> Option<String> {
     try_http_request(port, "POST", "/api/hello", body)
 }
 
-fn wait_for_response(port: u16, expected: &str, name: &str) -> String {
+fn wait_for_response(port: u16, expected: &str, name: &str) -> Option<String> {
     let body = format!(r#"{{"name":"{name}"}}"#);
     let deadline = Instant::now() + Duration::from_secs(30);
     while Instant::now() < deadline {
         if let Some(response) = try_http_request(port, "POST", "/api/hello", body.as_bytes()) {
             if response.contains(expected) {
-                return response;
+                return Some(response);
             }
         }
         thread::sleep(Duration::from_millis(100));
     }
-    panic!("server did not return expected updated content: {expected}");
+    None
 }
 
 fn wait_for_log(path: &std::path::Path, expected: &str) {
