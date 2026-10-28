@@ -1,0 +1,31 @@
+[workspace]
+members = [
+    "crates/fun-core",
+    "crates/fun-server",
+    "crates/fun-cli",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+async-trait = "0.1"
+axum = "0.8"
+base64 = "0.22"
+clap = { version = "4.5", features = ["derive"] }
+dotenvy = "0.15"
+fun-core = { version = "0.1.0", path = "crates/fun-core" }
+http = "1"
+http-body-util = "0.1"
+notify = "8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+toml = "0.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+url = "2"

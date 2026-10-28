@@ -1,0 +1,7 @@
+#!/bin/sh
+PATH=${PATH:-/usr/bin:/bin}
+export PATH
+while IFS= read -r request; do
+  request_id=$(printf '%s\n' "$request" | sed -n 's/.*"request_id":"\([^"]*\)".*/\1/p')
+  printf '{"version":1,"request_id":"%s","outcome":"response","status":200,"headers":[["content-type","text/plain"]],"body":"SGVsbG8gZnJvbSBwcm92aWRlZCBydW50aW1l"}\n' "$request_id"
+done
