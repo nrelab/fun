@@ -30,6 +30,8 @@ response contract, so routing and HTTP behavior remain consistent.
 3. Each generated starter contains its source, runtime metadata, and the
    runtime-specific files needed by `fun dev` to build or start it. The
    generated `provided` starter includes an executable `bootstrap` example.
+   The generated Python starter includes at least one discoverable unittest so
+   `fun test` verifies its handler instead of reporting an empty suite.
    `fun init` refuses to overwrite a non-empty destination, as it does today.
 
 4. A function receives the same request fields regardless of runtime:

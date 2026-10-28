@@ -10,6 +10,7 @@ include = [
     "src/templates/rust-http/src/main.rs",
     "src/templates/nodejs/index.js",
     "src/templates/python3/main.py",
+    "src/templates/python3/test_main.py",
     "src/templates/go1x/go.mod",
     "src/templates/go1x/main.go",
     "src/templates/provided/bootstrap",

@@ -181,6 +181,12 @@ fn init_project(path: &Path, runtime: RuntimeKind) -> Result<(), Box<dyn Error>>
             ),
         };
         files.push((relative.into(), contents.into()));
+        if runtime == RuntimeKind::Python3 {
+            files.push((
+                "functions/hello/test_main.py".into(),
+                include_str!("templates/python3/test_main.py").into(),
+            ));
+        }
         (runtime == RuntimeKind::Provided).then_some("functions/hello/bootstrap")
     };
     for (relative, _) in &files {

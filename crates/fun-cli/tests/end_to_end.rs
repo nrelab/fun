@@ -298,6 +298,17 @@ fn generated_non_rust_runtimes_share_the_worker_contract() {
                 String::from_utf8_lossy(&tested.stdout)
             );
         }
+        if runtime == "python3" {
+            let test_output = format!(
+                "{}{}",
+                String::from_utf8_lossy(&tested.stdout),
+                String::from_utf8_lossy(&tested.stderr)
+            );
+            assert!(
+                test_output.contains("Ran 1 test"),
+                "expected generated Python unittest to run: {test_output}"
+            );
+        }
     }
 }
 
